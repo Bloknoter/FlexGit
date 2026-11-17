@@ -52,9 +52,6 @@ project.fragment.lock.json
 *.coveragexml
 coverage*/
 
-# Unity integration and Unity-only tools (kept local, not published)
-unity/
-
 # Claude Code
 .claude/
 CLAUDE.md
