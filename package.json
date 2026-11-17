@@ -1,0 +1,22 @@
+{
+  "name": "com.bloknoter.flexgit",
+  "version": "2.0.0",
+  "displayName": "FlexGit",
+  "description": "Async C# git API built on the real git command line: Git LFS, Git Credential Manager, SSH and hooks work as in a terminal. Editor only.",
+  "unity": "2021.3",
+  "license": "MIT",
+  "documentationUrl": "https://github.com/Bloknoter/FlexGit#readme",
+  "changelogUrl": "https://github.com/Bloknoter/FlexGit/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Bloknoter/FlexGit/blob/main/LICENSE",
+  "keywords": [
+    "git",
+    "lfs",
+    "vcs",
+    "editor",
+    "tools"
+  ],
+  "author": {
+    "name": "Bloknoter",
+    "url": "https://github.com/Bloknoter"
+  }
+}
