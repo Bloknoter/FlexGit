@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    netstandard2.1 + C# 9 (Directory.Build.props), no dependencies.
+    If using in a Unity project: Unity 2021.3+ compiles C# 9 against .NET Standard 2.1, so don't raise either.
+    The Release workflow builds this project and attaches FlexGit.dll to the GitHub Release.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>FlexGit</AssemblyName>
+    <RootNamespace>FlexGit</RootNamespace>
+    <Version>2.0.0</Version>
+    <Description>Async C# git API built on the git command line: LFS, credential helpers, SSH and hooks work as in a terminal.</Description>
+    <RepositoryUrl>https://github.com/Bloknoter/FlexGit</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+  </PropertyGroup>
+
+</Project>

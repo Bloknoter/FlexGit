@@ -1,0 +1,67 @@
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.rsuser
+*.userprefs
+*.DotSettings.user
+*.VC.db
+*.VC.opendb
+*.opendb
+*.ncb
+*.sdf
+*.opensdf
+*.aps
+*.vspscc
+*.vssscc
+*.pidb
+*.svclog
+ipch/
+.vshistory/
+_ReSharper*/
+*.[Rr]e[Ss]harper
+_UpgradeReport_Files/
+UpgradeLog*.XML
+UpgradeLog*.htm
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]64/
+artifacts/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+
+# Test results / coverage
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage*/
+
+# Unity integration and Unity-only tools (kept local, not published)
+unity/
+
+# Claude Code
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store

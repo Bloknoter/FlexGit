@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    The library targets netstandard2.1 and is pinned to C# 9. Test projects override LangVersion.
+    If using in a Unity project: Unity 2021.3+ compiles C# 9 against .NET Standard 2.1, so don't raise either.
+  -->
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+    <Deterministic>true</Deterministic>
+    <WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
+  </PropertyGroup>
+</Project>
