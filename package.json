@@ -1,6 +1,6 @@
 {
   "name": "com.bloknoter.flexgit",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "displayName": "FlexGit",
   "description": "Async C# git API built on the real git command line: Git LFS, Git Credential Manager, SSH and hooks work as in a terminal. Editor only.",
   "unity": "2021.3",

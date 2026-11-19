@@ -102,23 +102,33 @@ namespace FlexGit
 
     public enum ConflictResolutionStatus
     {
+        /// <summary>No conflict markers remain (and the file was staged, unless staging was turned off).</summary>
         Resolved,
         /// <summary>Some files still contain conflict markers; nothing was staged.</summary>
         ConflictMarkersFound,
-        Failed
+        Failed,
+        /// <summary>The given hunks were written; other hunks still have markers, so the file was not staged.</summary>
+        PartiallyResolved,
+        /// <summary>The file changed after it was read (or was deleted); nothing was written. Read it again.</summary>
+        FileChanged
     }
 
-    /// <summary>Result of marking conflicts as resolved.</summary>
+    /// <summary>Result of resolving conflicts or marking them as resolved.</summary>
     public sealed class ConflictResolutionResult : GitOperationResult<ConflictResolutionStatus>
     {
-        internal ConflictResolutionResult(ConflictResolutionStatus status, string message, IReadOnlyList<string> filesWithMarkers, GitError? error)
+        internal ConflictResolutionResult(ConflictResolutionStatus status, string message, IReadOnlyList<string> filesWithMarkers, GitError? error,
+            int remainingHunks = 0)
             : base(status, message, error)
         {
             FilesWithMarkers = filesWithMarkers;
+            RemainingHunks = remainingHunks;
         }
 
         /// <summary>Files that still contain &lt;&lt;&lt;&lt;&lt;&lt;&lt; / ======= / &gt;&gt;&gt;&gt;&gt;&gt;&gt; markers.</summary>
         public IReadOnlyList<string> FilesWithMarkers { get; }
+
+        /// <summary>Hunks that still have conflict markers after a hunk resolution (0 otherwise).</summary>
+        public int RemainingHunks { get; }
 
         public override bool Succeeded => Status == ConflictResolutionStatus.Resolved;
     }
