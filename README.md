@@ -56,7 +56,7 @@ var pull = await repo.PullAsync(progress: new Progress<GitProgress>(p => Console
 if (pull.Status == PullStatus.Conflicts)
 {
     foreach (var conflict in await repo.Conflicts.ListAsync()) Console.WriteLine(conflict.Path);
-    // repo.Conflicts.TakeOursAsync / TakeTheirsAsync / MarkResolvedAsync, then repo.ContinueMergeAsync()
+    // Resolve (see "Resolving conflicts" below), then repo.ContinueMergeAsync()
 }
 
 var push = await repo.PushAsync();                             // the first push of a branch sets its upstream
@@ -75,12 +75,50 @@ if (push.Status == PushStatus.Rejected) { /* someone pushed first: pull, then pu
 | `repo.Tags` | `ListAsync`, `ExistsAsync`, `CreateAsync`, `DeleteAsync`, `PushAsync`, `PushAllAsync`, `DeleteRemoteAsync` |
 | `repo.History` | `GetLogAsync`, `GetCommitAsync`, `ReadFileAsync` |
 | `repo.Stash` | `PushAsync`, `ListAsync`, `ApplyAsync`, `PopAsync`, `DropAsync`, `ClearAsync` |
-| `repo.Conflicts` | `ListAsync`, `TakeOursAsync`, `TakeTheirsAsync`, `MarkResolvedAsync`, `MarkAllResolvedAsync`, `HasConflictMarkersAsync` |
+| `repo.Conflicts` | `ListAsync`, `GetOverviewAsync`, `GetFileAsync`, `ResolveAsync`, `RestoreConflictAsync`, `TakeOursAsync`, `TakeTheirsAsync`, `MarkResolvedAsync`, `MarkAllResolvedAsync`, `HasConflictMarkersAsync` |
 | `repo.Rebase` | `StartAsync`, `ContinueAsync`, `SkipAsync`, `AbortAsync`, `IsInProgress` |
 | `repo.Config` | `GetAsync`, `SetAsync`, `UnsetAsync`, `GetUserIdentityAsync`, `SetUserIdentityAsync` |
 | `repo.Lfs` | `IsInstalled`, `IsUsedInRepositoryAsync`, `EnsureInstalledAsync`, `TrackAsync`, `UntrackAsync`, `ListLocksAsync`, `LockAsync`, `UnlockAsync`, `PullAsync`, `FetchAsync` |
 
 Every method is async and takes a `CancellationToken`. Long-running operations also take an `IProgress<GitProgress>`.
+
+### Resolving conflicts
+
+When a merge, pull, rebase or stash pop stops with conflicts, `repo.Conflicts` shows what conflicted and resolves it:
+
+```csharp
+var overview = await repo.Conflicts.GetOverviewAsync();          // Operation (Merging, Rebasing, ...) + every unmerged file
+foreach (var info in overview.Files)
+{
+    if (!info.CanResolveHunks)
+    {
+        // Binary, deleted on one side, or markers already removed by hand: resolve the whole file.
+        await repo.Conflicts.TakeTheirsAsync(new[] { info.Path });   // or TakeOursAsync / MarkResolvedAsync
+        continue;
+    }
+
+    var file = await repo.Conflicts.GetFileAsync(info.Path);     // hunks + the text around them (file.Segments)
+    foreach (var hunk in file.Hunks)
+        Console.WriteLine($"lines {hunk.StartLine}-{hunk.EndLine}: {hunk.GetChoiceLabel(ConflictChoice.OursThenTheirs)}");
+        // hunk.Ours / hunk.Theirs (and hunk.Base with merge.conflictStyle=diff3); labels such as "HEAD" / "feature"
+
+    var result = await repo.Conflicts.ResolveAsync(file, new[]
+    {
+        new ConflictHunkResolution(0, ConflictChoice.Ours),            // "Use HEAD"
+        new ConflictHunkResolution(1, ConflictChoice.TheirsThenOurs),  // "Use feature then HEAD"
+        ConflictHunkResolution.Custom(2, "hand-written line\n"),
+    });
+    // Resolved: no markers left, file staged. PartiallyResolved: unlisted hunks keep their markers.
+    // FileChanged: the file was edited after GetFileAsync; nothing was written, read it again.
+}
+await repo.ContinueMergeAsync();                                  // or repo.Rebase.ContinueAsync()
+```
+
+- `ResolveAsync(file, ConflictChoice.Theirs)` applies one choice to every hunk. `file.GetResolvedText(...)` previews the result without writing.
+- Choosing `Ours` for every hunk keeps the other side's changes that merged cleanly. `TakeOursAsync` takes our whole version of the file instead.
+- `RestoreConflictAsync(paths, ConflictMarkerStyle.Diff3)` rewrites a still-unmerged file with all its original hunks, discarding edits made to it since.
+- During a rebase, "ours" is the branch you rebase onto and "theirs" is your commit. After a conflicted stash pop the stash is kept, so drop it after resolving.
+- Hunks come from the conflict markers in the working-tree file, so manual edits are picked up. The `conflict-marker-size` attribute is respected. Text that isn't UTF-8 is copied byte for byte (custom text is written as UTF-8).
 
 ### Results, errors, cancellation
 

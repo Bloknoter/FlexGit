@@ -3,6 +3,18 @@
 All notable changes to this library are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the library uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Per-hunk conflict resolution in `repo.Conflicts`:
+  - `GetOverviewAsync`: the operation that stopped, plus a summary of every unmerged file (kind, binary, number of hunks).
+  - `GetFileAsync`: one file's hunks (ours/theirs/base text, marker labels, line numbers) and the text around them.
+  - `ResolveAsync`: resolves each hunk its own way (ours, theirs, ours then theirs, theirs then ours, or custom text). It stages the file once no markers remain, and never overwrites a file that changed after it was read.
+  - `ConflictHunk.GetChoiceLabel`: display text such as "Use HEAD then feature".
+  - `ConflictedFile.GetResolvedText`: previews the result without writing.
+  - `RestoreConflictAsync`: rebuilds a conflicted file's markers from git, optionally in diff3 style.
+- `ConflictResolutionStatus.PartiallyResolved` and `FileChanged`, and `ConflictResolutionResult.RemainingHunks`.
+
 ## [2.0.0] - 2026-11-17
 
 Complete rewrite on top of the git command line, replacing the LibGit2Sharp-based v1. The API is not compatible with v1.
