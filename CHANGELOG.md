@@ -3,6 +3,14 @@
 All notable changes to this library are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the library uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `repo.Diff.GetWorkingTreeDiffAsync(path, contextLines, originalPath)`: one file's changes between HEAD and the working tree (staged and unstaged together), computed by `git diff-index -p`.
+  - Returns hunks with old/new line numbers and each line marked unchanged, removed or added. Also returns the change kind (added, deleted, modified, renamed), a binary flag, the old and new file sizes, and the rename's old path.
+  - Untracked files are diffed as every line added. Deleted files show every old line as removed.
+  - Git LFS files have no hunks (git only compares pointers). Their sizes are those of the real content.
+
 ## [2.1.0] - 2026-11-20
 
 ### Added

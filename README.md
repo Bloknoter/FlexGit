@@ -74,6 +74,7 @@ if (push.Status == PushStatus.Rejected) { /* someone pushed first: pull, then pu
 | `repo.Remotes` | `ListAsync`, `GetAsync`, `AddAsync`, `SetUrlAsync`, `AddOrUpdateAsync`, `RemoveAsync`, `RenameAsync` |
 | `repo.Tags` | `ListAsync`, `ExistsAsync`, `CreateAsync`, `DeleteAsync`, `PushAsync`, `PushAllAsync`, `DeleteRemoteAsync` |
 | `repo.History` | `GetLogAsync`, `GetCommitAsync`, `ReadFileAsync` |
+| `repo.Diff` | `GetWorkingTreeDiffAsync` |
 | `repo.Stash` | `PushAsync`, `ListAsync`, `ApplyAsync`, `PopAsync`, `DropAsync`, `ClearAsync` |
 | `repo.Conflicts` | `ListAsync`, `GetOverviewAsync`, `GetFileAsync`, `ResolveAsync`, `RestoreConflictAsync`, `TakeOursAsync`, `TakeTheirsAsync`, `MarkResolvedAsync`, `MarkAllResolvedAsync`, `HasConflictMarkersAsync` |
 | `repo.Rebase` | `StartAsync`, `ContinueAsync`, `SkipAsync`, `AbortAsync`, `IsInProgress` |
@@ -119,6 +120,31 @@ await repo.ContinueMergeAsync();                                  // or repo.Reb
 - `RestoreConflictAsync(paths, ConflictMarkerStyle.Diff3)` rewrites a still-unmerged file with all its original hunks, discarding edits made to it since.
 - During a rebase, "ours" is the branch you rebase onto and "theirs" is your commit. After a conflicted stash pop the stash is kept, so drop it after resolving.
 - Hunks come from the conflict markers in the working-tree file, so manual edits are picked up. The `conflict-marker-size` attribute is respected. Text that isn't UTF-8 is copied byte for byte (custom text is written as UTF-8).
+
+### Showing a file's changes
+
+`repo.Diff.GetWorkingTreeDiffAsync` compares a file in HEAD with the working tree, staged and unstaged changes together, the way `git diff HEAD` does:
+
+```csharp
+foreach (var entry in (await repo.GetStatusAsync()).Entries)
+{
+    var diff = await repo.Diff.GetWorkingTreeDiffAsync(entry.Path, contextLines: 3, originalPath: entry.OriginalPath);
+    // diff.Change: Added (also untracked files), Deleted, Modified, Renamed (diff.OldPath) or None
+    if (diff.IsBinary || diff.IsLfs)
+    {
+        Console.WriteLine($"{diff.Path}: {diff.OldSize} -> {diff.NewSize} bytes");
+        continue;
+    }
+    foreach (var hunk in diff.Hunks)
+        foreach (var line in hunk.Lines)   // line.Kind: Unchanged, Removed or Added
+            Console.WriteLine($"{line.OldLineNumber,5} {line.NewLineNumber,5} {line}");
+}
+```
+
+- git does the comparison (`git diff-index -p`), so line endings (`core.autocrlf`), binary detection and renames work the way they do in git. User settings such as colours or external diff tools don't change the result.
+- Untracked files are diffed as every line added. Deleted files show every old line as removed.
+- Pass the rename's old path (`StatusEntry.OriginalPath`) so a staged rename is reported as `Renamed` with only the edited lines. A move that isn't staged is a deletion plus an untracked file, as in git.
+- Git LFS files have no hunks, because git only compares LFS pointers. `OldSize` and `NewSize` are the sizes of the real content.
 
 ### Results, errors, cancellation
 

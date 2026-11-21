@@ -32,6 +32,7 @@ namespace FlexGit
             Conflicts = new ConflictCommands(this);
             Rebase = new RebaseCommands(this);
             Lfs = new LfsCommands(this);
+            Diff = new DiffCommands(this);
         }
 
         internal GitContext Context { get; }
@@ -79,6 +80,9 @@ namespace FlexGit
 
         /// <summary>Git LFS: tracking patterns and file locking.</summary>
         public LfsCommands Lfs { get; }
+
+        /// <summary>Line-by-line differences of changed files.</summary>
+        public DiffCommands Diff { get; }
 
         /// <summary>Opens the repository containing <paramref name="path"/> (the path may be any folder inside it).</summary>
         /// <exception cref="GitCommandException">git is missing/too old, or the path is not inside a repository.</exception>
